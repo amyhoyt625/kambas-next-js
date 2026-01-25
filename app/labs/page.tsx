@@ -3,6 +3,7 @@ export default function labs() {
  return (
    <div id="wd-labs">
      <h1>Labs</h1>
+     <h2> Amy</h2>
      <h2> Amy Hoyt</h2>
      <h3> CS4550</h3>
      <ul>
