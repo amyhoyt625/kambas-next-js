@@ -4,8 +4,7 @@ export default function labs() {
    <div id="wd-labs">
      <h1>Labs</h1>
      <h2> Amy </h2>
-     <h2> Amy Hoyt</h2>
-     <h3> CS4550</h3>
+     <h3> Amy Hoyt, CS4550 Section 02</h3>
      <ul>
       <li> 
         <Link href="https://github.com/amyhoyt625/kambas-next-js" id="wd-github"> 
