@@ -20,8 +20,6 @@ export default function AssignmentEditor() {
             </td>
           </tr>
 
-          <br/> 
-          
           <tr>
             <td align="right" valign="top">
             <label htmlFor="wd-select-assignment-group"> Assignment Group </label>
