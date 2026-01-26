@@ -5,6 +5,5 @@ export default function AccountNavigation() {
      <Link href="signin"> Signin </Link> <br />
      <Link href="signup"> Signup </Link> <br />
      <Link href="profile"> Profile </Link> <br />
-     <Link href="/dashboard"> Dashboard </Link> <br />
    </div>
 );}
