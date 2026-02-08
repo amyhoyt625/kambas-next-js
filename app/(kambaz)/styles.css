@@ -1,0 +1,78 @@
+body   {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body * {
+    font-family: Arial,
+    Helvetica, sans-serif;
+  }
+  
+  @media (min-width: 768px) {
+    #wd-kambaz .wd-main-content-offset {
+      padding-left: 140px !important;
+    }
+  }
+  
+  /* Navigation item styling */
+.wd-nav-item {
+    background-color: black !important;
+  }
+  
+  .wd-nav-link {
+    color: white;
+    text-decoration: none;
+    display: block;
+    padding: 10px;
+  }
+  /* Add this rule for red icons by default */
+.wd-nav-link svg {
+    color: #dc3545 !important;
+  }
+  
+  /* Hover state - white background, red text */
+  .wd-nav-item:hover {
+    background-color: white !important;
+  }
+  
+  .wd-nav-item:hover .wd-nav-link,
+  .wd-nav-item:hover .wd-nav-link svg {
+    color: #dc3545 !important; 
+  }
+  
+  /* Active state - white background, red text */
+  .wd-nav-item:active {
+    background-color: white !important;
+  }
+  
+  .wd-nav-item:active .wd-nav-link,
+  .wd-nav-item:active .wd-nav-link svg {
+    color: #dc3545 !important;
+  }
+
+  .list-group.wd > .list-group-item.active {
+    color: black;
+    background-color: white;
+    border-left: 3px solid black !important;
+  }
+
+  .btn-secondary {
+    --bs-btn-color: #000 !important;
+    --bs-btn-bg: #c7cdd1 !important;
+    --bs-btn-border-color: #c7cdd1 !important;
+    --bs-btn-hover-color: #fff !important;
+  }
+  .bg-secondary {
+    --bs-secondary-rgb: 199, 205, 209;
+  }
+  .list-group-item {
+    --bs-list-group-border-color: gray;
+  }
+  .wd-lesson {
+    border-left: 3px solid green !important;
+  }
+  
+  .wd-assignment-list-item {
+    border-left: 3px solid green !important;
+  }
+  
