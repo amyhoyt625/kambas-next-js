@@ -1,51 +1,58 @@
+"use client";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import { Form, Button, Row, Col, FormLabel, FormControl, FormSelect, FormCheck } from "react-bootstrap";
+import * as db from "../../../../database";
 
 export default function AssignmentEditor() {
+  const { cid, aid } = useParams();
+  const assignment = db.assignments.find((a: any) => a._id === aid);
+
+  const toDateInput = (dateStr: string | undefined) => {
+    if (!dateStr) return "";
+    // Strip time portion e.g. "May 6 at 12:00am" → "May 6"
+    const cleaned = dateStr.replace(/ at .+/, "").trim();
+    const date = new Date(`${cleaned}, 2024`);
+    return isNaN(date.getTime()) ? "" : date.toISOString().split("T")[0];
+  };
+
   return (
     <div id="wd-assignments-editor" className="p-4">
       {/* Assignment Name */}
       <div className="mb-3">
         <FormLabel htmlFor="wd-name">Assignment Name</FormLabel>
-        <FormControl 
-          id="wd-name" 
+        <FormControl
+          id="wd-name"
           type="text"
-          defaultValue="A1 - ENV + HTML" 
+          defaultValue={assignment?.title ?? ""}
         />
       </div>
 
       {/* Description */}
       <div className="mb-3">
         <FormLabel htmlFor="wd-description">Description</FormLabel>
-        <FormControl 
+        <FormControl
           as="textarea"
-          id="wd-description" 
+          id="wd-description"
           rows={8}
-          defaultValue="The assignment is available online Submit a link to the landing page of your Web application running on Netlify. The landing page should include the following: Your full name and section Links to each of the lab assignments Link to the Kambaz application Links to all relevant source code repositories. The Kambaz application should include a link to navigate back to the landing page."
+          defaultValue={assignment?.description ?? "The assignment is available online. Submit a link to the landing page of your Web application running on Netlify."}
         />
       </div>
 
       {/* Points */}
       <Row className="mb-3">
         <Col xs={12} md={4}>
-          <FormLabel htmlFor="wd-points" className="text-md-end d-block pt-2">
-            Points
-          </FormLabel>
+          <FormLabel htmlFor="wd-points" className="text-md-end d-block pt-2">Points</FormLabel>
         </Col>
         <Col xs={12} md={8}>
-          <FormControl 
-            id="wd-points" 
-            type="number" 
-            defaultValue={100} 
-          />
+          <FormControl id="wd-points" type="number" defaultValue={assignment?.points ?? 100} />
         </Col>
       </Row>
 
       {/* Assignment Group */}
       <Row className="mb-3">
         <Col xs={12} md={4}>
-          <FormLabel htmlFor="wd-assignment-group" className="text-md-end d-block pt-2">
-            Assignment Group
-          </FormLabel>
+          <FormLabel htmlFor="wd-assignment-group" className="text-md-end d-block pt-2">Assignment Group</FormLabel>
         </Col>
         <Col xs={12} md={8}>
           <FormSelect id="wd-assignment-group">
@@ -58,9 +65,7 @@ export default function AssignmentEditor() {
       {/* Display Grade as */}
       <Row className="mb-3">
         <Col xs={12} md={4}>
-          <FormLabel htmlFor="wd-display-grade-as" className="text-md-end d-block pt-2">
-            Display Grade as
-          </FormLabel>
+          <FormLabel htmlFor="wd-display-grade-as" className="text-md-end d-block pt-2">Display Grade as</FormLabel>
         </Col>
         <Col xs={12} md={8}>
           <FormSelect id="wd-display-grade-as">
@@ -73,47 +78,19 @@ export default function AssignmentEditor() {
       {/* Submission Type */}
       <Row className="mb-3">
         <Col xs={12} md={4}>
-          <FormLabel className="text-md-end d-block pt-2">
-            Submission Type
-          </FormLabel>
+          <FormLabel className="text-md-end d-block pt-2">Submission Type</FormLabel>
         </Col>
         <Col xs={12} md={8}>
           <div className="border p-3 rounded">
             <FormSelect id="wd-submission-type" className="mb-3">
               <option value="ONLINE">Online</option>
             </FormSelect>
-
             <FormLabel className="fw-bold mb-2">Online Entry Options</FormLabel>
-            
-            <FormCheck 
-              type="checkbox"
-              id="wd-chkbox-text"
-              label="Text Entry"
-              className="mb-2"
-            />
-            <FormCheck 
-              type="checkbox"
-              id="wd-chkbox-url"
-              label="Website URL"
-              className="mb-2"
-            />
-            <FormCheck 
-              type="checkbox"
-              id="wd-chkbox-media"
-              label="Media Recordings"
-              className="mb-2"
-            />
-            <FormCheck 
-              type="checkbox"
-              id="wd-chkbox-student"
-              label="Student Annotation"
-              className="mb-2"
-            />
-            <FormCheck 
-              type="checkbox"
-              id="wd-chkbox-upload"
-              label="File Uploads"
-            />
+            <FormCheck type="checkbox" id="wd-chkbox-text"    label="Text Entry"          className="mb-2" />
+            <FormCheck type="checkbox" id="wd-chkbox-url"     label="Website URL"         className="mb-2" />
+            <FormCheck type="checkbox" id="wd-chkbox-media"   label="Media Recordings"    className="mb-2" />
+            <FormCheck type="checkbox" id="wd-chkbox-student" label="Student Annotation"  className="mb-2" />
+            <FormCheck type="checkbox" id="wd-chkbox-upload"  label="File Uploads" />
           </div>
         </Col>
       </Row>
@@ -121,51 +98,36 @@ export default function AssignmentEditor() {
       {/* Assign */}
       <Row className="mb-3">
         <Col xs={12} md={4}>
-          <FormLabel className="text-md-end d-block pt-2">
-            Assign
-          </FormLabel>
+          <FormLabel className="text-md-end d-block pt-2">Assign</FormLabel>
         </Col>
         <Col xs={12} md={8}>
           <div className="border p-3 rounded">
-            <FormLabel htmlFor="wd-assign-to" className="fw-bold">
-              Assign to
-            </FormLabel>
-            <FormControl 
-              id="wd-assign-to" 
-              type="text"
-              defaultValue="Everyone"
-              className="mb-3"
-            />
+            <FormLabel htmlFor="wd-assign-to" className="fw-bold">Assign to</FormLabel>
+            <FormControl id="wd-assign-to" type="text" defaultValue="Everyone" className="mb-3" />
 
-            <FormLabel htmlFor="wd-due-date" className="fw-bold">
-              Due
-            </FormLabel>
-            <FormControl 
-              id="wd-due-date" 
+            <FormLabel htmlFor="wd-due-date" className="fw-bold">Due</FormLabel>
+            <FormControl
+              id="wd-due-date"
               type="date"
-              defaultValue="2024-05-13"
+              defaultValue={toDateInput(assignment?.due)}
               className="mb-3"
             />
 
             <Row>
               <Col xs={12} md={6}>
-                <FormLabel htmlFor="wd-available-from" className="fw-bold">
-                  Available from
-                </FormLabel>
-                <FormControl 
-                  id="wd-available-from" 
+                <FormLabel htmlFor="wd-available-from" className="fw-bold">Available from</FormLabel>
+                <FormControl
+                  id="wd-available-from"
                   type="date"
-                  defaultValue="2024-05-06"
+                  defaultValue={toDateInput(assignment?.availableFrom)}
                 />
               </Col>
               <Col xs={12} md={6}>
-                <FormLabel htmlFor="wd-available-until" className="fw-bold">
-                  Until
-                </FormLabel>
-                <FormControl 
-                  id="wd-available-until" 
+                <FormLabel htmlFor="wd-available-until" className="fw-bold">Until</FormLabel>
+                <FormControl
+                  id="wd-available-until"
                   type="date"
-                  defaultValue="2024-05-20"
+                  defaultValue={toDateInput(assignment?.due)}
                 />
               </Col>
             </Row>
@@ -177,12 +139,12 @@ export default function AssignmentEditor() {
       <hr />
       <Row>
         <Col className="text-end">
-          <Button variant="secondary" className="me-2">
-            Cancel
-          </Button>
-          <Button variant="danger">
-            Save
-          </Button>
+          <Link href={`/courses/${cid}/assignments`}>
+            <Button variant="secondary" className="me-2">Cancel</Button>
+          </Link>
+          <Link href={`/courses/${cid}/assignments`}>
+            <Button variant="danger">Save</Button>
+          </Link>
         </Col>
       </Row>
     </div>
