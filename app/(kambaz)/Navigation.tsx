@@ -4,33 +4,37 @@ import { IoCalendarOutline } from "react-icons/io5";
 import { LiaBookSolid, LiaCogSolid } from "react-icons/lia";
 import { FaInbox, FaRegCircleUser } from "react-icons/fa6";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
-import { GoBeaker } from "react-icons/go";
 import { usePathname } from "next/navigation";
+import { useSelector } from "react-redux";
+import { RootState } from "./store";
 import Link from "next/link";
 
 export default function KambazNavigation() {
   const pathname = usePathname();
+  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
   const links = [
     { label: "Dashboard", path: "/dashboard", icon: AiOutlineDashboard },
-    { label: "Courses",   path: "/dashboard",    icon: LiaBookSolid },
-    { label: "Calendar",  path: "/Calendar",  icon: IoCalendarOutline },
-    { label: "Inbox",     path: "/Inbox",     icon: FaInbox },
-    { label: "Labs",      path: "/labs",      icon: LiaCogSolid },
+    { label: "Courses",   path: "/dashboard",  icon: LiaBookSolid },
+    { label: "Calendar",  path: "/Calendar",   icon: IoCalendarOutline },
+    { label: "Inbox",     path: "/Inbox",      icon: FaInbox },
+    { label: "Labs",      path: "/labs",       icon: LiaCogSolid },
   ];
 
   const isActive = (label: string) =>
     pathname.toLowerCase().includes(label.toLowerCase());
 
+  const accountPath = currentUser ? "/account/profile" : "/account/signin";
+
   return (
-    <ListGroup className="rounded-0 position-fixed bottom-0 top-0 d-none d-md-block bg-black z-2" style={{ width: 115 }}
-               id="wd-kambaz-navigation">
+    <ListGroup className="rounded-0 position-fixed bottom-0 top-0 d-none d-md-block bg-black z-2"
+      style={{ width: 115 }} id="wd-kambaz-navigation">
 
       <ListGroupItem className="bg-black border-0 text-center" as="a"
-               target="_blank" href="https://www.northeastern.edu/" id="wd-neu-link">
+        target="_blank" href="https://www.northeastern.edu/" id="wd-neu-link">
         <img src="/images/neu.png" width="75px" alt="Northeastern University" />
       </ListGroupItem>
 
-      <ListGroupItem as={Link} href="/account"
+      <ListGroupItem as={Link} href={accountPath}
         className={`text-center border-0
           ${isActive("account") ? "bg-white text-danger" : "bg-black text-white"}`}>
         <FaRegCircleUser className="fs-1 text-danger" />

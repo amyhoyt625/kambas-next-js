@@ -1,18 +1,28 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteAssignment } from "./reducer";
+import { RootState } from "../../../store";
 import { ListGroup, ListGroupItem, Button, InputGroup, FormControl } from "react-bootstrap";
 import InputGroupText from "react-bootstrap/esm/InputGroupText";
 import { BsGripVertical } from "react-icons/bs";
-import { FaPlus, FaSearch } from "react-icons/fa";
+import { FaPlus, FaSearch, FaTrash } from "react-icons/fa";
 import { IoEllipsisVertical } from "react-icons/io5";
 import { HiOutlinePencilSquare } from "react-icons/hi2";
 import LessonControlButtons from "../modules/LessonControlButtons";
-import * as db from "../../../database";
 
 export default function Assignments() {
   const { cid } = useParams();
-  const assignments = db.assignments.filter((a: any) => a.course === cid);
+  const dispatch = useDispatch();
+  const { assignments } = useSelector((state: RootState) => state.assignmentsReducer);
+  const courseAssignments = assignments.filter((a: any) => a.course === cid);
+
+  const handleDelete = (assignmentId: string) => {
+    if (window.confirm("Are you sure you want to delete this assignment?")) {
+      dispatch(deleteAssignment(assignmentId));
+    }
+  };
 
   return (
     <div id="wd-assignments">
@@ -26,10 +36,12 @@ export default function Assignments() {
           <Button variant="secondary" size="lg" className="me-2" id="wd-add-assignment-group">
             <FaPlus className="me-1" /> Group
           </Button>
-          <Button variant="danger" size="lg" id="wd-add-assignment-btn">
-            <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
-            Assignment
-          </Button>
+          <Link href={`/courses/${cid}/assignments/new`}>
+            <Button variant="danger" size="lg" id="wd-add-assignment-btn">
+              <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
+              Assignment
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -48,7 +60,7 @@ export default function Assignments() {
           </div>
 
           <ListGroup className="rounded-0">
-            {assignments.map((assignment: any) => (
+            {courseAssignments.map((assignment: any) => (
               <ListGroupItem key={assignment._id}
                 className="wd-assignment-list-item p-3 ps-1 d-flex justify-content-between align-items-start">
                 <div className="d-flex align-items-start">
@@ -67,7 +79,11 @@ export default function Assignments() {
                     </div>
                   </div>
                 </div>
-                <LessonControlButtons />
+                <div className="d-flex align-items-center gap-2">
+                  <LessonControlButtons />
+                  <FaTrash className="text-danger" style={{ cursor: "pointer" }}
+                    onClick={() => handleDelete(assignment._id)} />
+                </div>
               </ListGroupItem>
             ))}
           </ListGroup>
