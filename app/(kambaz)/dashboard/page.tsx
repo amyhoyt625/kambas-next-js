@@ -25,6 +25,9 @@ export default function Dashboard() {
 
   if (!currentUser) return <div>Please sign in to view the dashboard.</div>;
 
+  const isStudent = currentUser.role === "STUDENT";
+  const isFaculty = ["FACULTY", "ADMIN", "TA"].includes(currentUser.role);
+
   const isEnrolled = (courseId: string) =>
     enrollments.some((e: any) => e.user === currentUser._id && e.course === courseId);
 
@@ -41,7 +44,7 @@ export default function Dashboard() {
         </Button>
       </h1> <hr />
 
-      {currentUser.role === "FACULTY" && (
+      {isFaculty && (
         <>
           <h5>New Course
             <Button variant="primary" className="float-end" id="wd-add-new-course-click"
@@ -78,31 +81,37 @@ export default function Dashboard() {
                       style={{ height: "100px" }}>
                       {c.description}
                     </CardText>
-                    <Button variant="primary" disabled={!isEnrolled(c._id)}>Go</Button>
 
-                    {isEnrolled(c._id) ? (
-                      <Button variant="danger" className="float-end ms-2"
-                        id="wd-unenroll-btn"
-                        onClick={(e) => { e.preventDefault();
-                          dispatch(unenroll({ userId: currentUser._id, courseId: c._id })); }}>
-                        Unenroll
-                      </Button>
-                    ) : (
-                      <Button variant="success" className="float-end ms-2"
-                        id="wd-enroll-btn"
-                        onClick={(e) => { e.preventDefault();
-                          dispatch(enroll({ userId: currentUser._id, courseId: c._id })); }}>
-                        Enroll
-                      </Button>
+                    <Button variant="primary" className="me-2"
+                      disabled={!isEnrolled(c._id)}>Go</Button>
+
+                    {isStudent && (
+                      isEnrolled(c._id) ? (
+                        <Button variant="danger" className="float-end"
+                          id="wd-unenroll-btn"
+                          onClick={(e) => { e.preventDefault();
+                            dispatch(unenroll({ userId: currentUser._id, courseId: c._id })); }}>
+                          Unenroll
+                        </Button>
+                      ) : (
+                        <Button variant="success" className="float-end"
+                          id="wd-enroll-btn"
+                          onClick={(e) => { e.preventDefault();
+                            dispatch(enroll({ userId: currentUser._id, courseId: c._id })); }}>
+                          Enroll
+                        </Button>
+                      )
                     )}
 
-                    {currentUser.role === "FACULTY" && (
+                    {isFaculty && (
                       <>
-                        <Button variant="danger" className="float-end" id="wd-delete-course-click"
+                        <Button variant="danger" className="float-end"
+                          id="wd-delete-course-click"
                           onClick={(e) => { e.preventDefault(); dispatch(deleteCourse(c._id)); }}>
                           Delete
                         </Button>
-                        <Button variant="warning" className="float-end me-2" id="wd-edit-course-click"
+                        <Button variant="warning" className="float-end me-2"
+                          id="wd-edit-course-click"
                           onClick={(e) => { e.preventDefault(); setCourse(c); }}>
                           Edit
                         </Button>
