@@ -270,7 +270,7 @@ export default function Lab1() {
           Comedy{" "}
         </option>
         <option value="DRAMA"> Drama </option>
-        <option value="SCIFI" selected>
+        <option defaultValue="SCIFI">
           {" "}
           Science Fiction{" "}
         </option>

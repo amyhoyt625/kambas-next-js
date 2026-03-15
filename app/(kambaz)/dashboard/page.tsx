@@ -1,100 +1,129 @@
+"use client";
+import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { useDispatch, useSelector } from "react-redux";
+import { addNewCourse, deleteCourse, updateCourse } from "../courses/reducer";
+import { enroll, unenroll } from "../enrollments/reducer";
+import { RootState } from "../store";
+import {
+  Row, Col, Card, CardImg, CardBody,
+  CardTitle, CardText, Button, FormControl,
+} from "react-bootstrap";
+
 export default function Dashboard() {
+  const { courses } = useSelector((state: RootState) => state.coursesReducer);
+  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
+  const { enrollments } = useSelector((state: RootState) => state.enrollmentsReducer);
+  const dispatch = useDispatch();
+
+  const [course, setCourse] = useState<any>({
+    _id: "0", name: "New Course", number: "New Number",
+    startDate: "2023-09-10", endDate: "2023-12-15",
+    image: "/images/reactjs.jpg", description: "New Description",
+  });
+  const [showAllCourses, setShowAllCourses] = useState(false);
+
+  if (!currentUser) return <div>Please sign in to view the dashboard.</div>;
+
+  const isStudent = currentUser.role === "STUDENT";
+  const isFaculty = ["FACULTY", "ADMIN", "TA"].includes(currentUser.role);
+
+  const isEnrolled = (courseId: string) =>
+    enrollments.some((e: any) => e.user === currentUser._id && e.course === courseId);
+
+  const displayedCourses = showAllCourses
+    ? courses
+    : courses.filter((c: any) => isEnrolled(c._id));
+
   return (
     <div id="wd-dashboard">
-      <h1 id="wd-dashboard-title">Dashboard</h1> <hr />
-      <h2 id="wd-dashboard-published">Published Courses (12)</h2> <hr />
+      <h1 id="wd-dashboard-title">Dashboard
+        <Button variant="primary" className="float-end" id="wd-enrollments-btn"
+          onClick={() => setShowAllCourses((prev) => !prev)}>
+          Enrollments
+        </Button>
+      </h1> <hr />
+
+      {isFaculty && (
+        <>
+          <h5>New Course
+            <Button variant="primary" className="float-end" id="wd-add-new-course-click"
+              onClick={() => dispatch(addNewCourse(course))}>Add</Button>
+            <Button variant="warning" className="float-end me-2" id="wd-update-course-click"
+              onClick={() => dispatch(updateCourse(course))}>Update</Button>
+          </h5><br />
+          <FormControl value={course.name} className="mb-2"
+            onChange={(e) => setCourse({ ...course, name: e.target.value })} />
+          <FormControl as="textarea" value={course.description} rows={3}
+            onChange={(e) => setCourse({ ...course, description: e.target.value })} />
+          <hr />
+        </>
+      )}
+
+      <h2 id="wd-dashboard-published">
+        Published Courses ({displayedCourses.length})
+      </h2> <hr />
+
       <div id="wd-dashboard-courses">
-        <div className="wd-dashboard-course">
-          <Link href="/courses/1234" className="wd-dashboard-course-link">
-            <Image src="/images/reactjs.jpg" width={200} height={150} alt="reactjs" />
-            <div>
-              <h5> CS1234 React JS </h5>
-              <p className="wd-dashboard-course-title">
-                Full Stack software developer
-              </p>
-              <button> Go </button>
-            </div>
-          </Link>
-        </div>
-        <div className="wd-dashboard-course">  <Link href="/courses/1234" className="wd-dashboard-course-link">
-            <Image src="/images/course2img.png" width={200} height={150} alt="reactjs" />
-            <div>
-              <h5> CS3800 Theory of Comp. </h5>
-              <p className="wd-dashboard-course-title">
-                Theory of Computation
-              </p>
-              <button> Go </button>
-            </div>
-          </Link> 
-        </div>
-        <div className="wd-dashboard-course">  <Link href="/courses/1234" className="wd-dashboard-course-link">
-            <Image src="/images/course3img.jpg" width={200} height={150} alt="reactjs" />
-            <div>
-              <h5> CS3000 Algo </h5>
-              <p className="wd-dashboard-course-title">
-                Algorithms
-              </p>
-              <button> Go </button>
-            </div>
-          </Link> 
-        </div>
-        <div className="wd-dashboard-course">  <Link href="/courses/1234" className="wd-dashboard-course-link">
-            <Image src="/images/course4img.jpg" width={200} height={150} alt="reactjs" />
-            <div>
-              <h5> CS2484 HCI </h5>
-              <p className="wd-dashboard-course-title">
-                Human Centered Interaction
-              </p>
-              <button> Go </button>
-            </div>
-          </Link> 
-        </div> 
-        <div className="wd-dashboard-course">  <Link href="/courses/1234" className="wd-dashboard-course-link">
-            <Image src="/images/course5img.png" width={200} height={150} alt="reactjs" />
-            <div>
-              <h5> CS4550 Web Dev</h5>
-              <p className="wd-dashboard-course-title">
-                Website Development
-              </p>
-              <button> Go </button>
-            </div>
-          </Link> 
-        </div>
-        <div className="wd-dashboard-course">  <Link href="/courses/1234" className="wd-dashboard-course-link">
-            <Image src="/images/course6img.jpg" width={200} height={150} alt="reactjs" />
-            <div>
-              <h5> CS3500 OOD </h5>
-              <p className="wd-dashboard-course-title">
-                Object Oriented Design 
-              </p>
-              <button> Go </button>
-            </div>
-          </Link> 
-        </div>
-        <div className="wd-dashboard-course">  <Link href="/courses/1234" className="wd-dashboard-course-link">
-            <Image src="/images/course7img.jpg" width={200} height={150} alt="reactjs" />
-            <div>
-              <h5> CS1210 PDC </h5>
-              <p className="wd-dashboard-course-title">
-                Proffesional Development for Co-op
-              </p>
-              <button> Go </button>
-            </div>
-          </Link> 
-        </div>
-        <div className="wd-dashboard-course">  <Link href="/courses/1234" className="wd-dashboard-course-link">
-            <Image src="/images/course8img.png" width={200} height={150} alt="reactjs" />
-            <div>
-              <h5> CS5678 Python </h5>
-              <p className="wd-dashboard-course-title">
-                Data Science and Data Bases
-              </p>
-              <button> Go </button>
-            </div>
-          </Link> 
-        </div>
+        <Row xs={1} md={5} className="g-4">
+          {displayedCourses.map((c: any) => (
+            <Col key={c._id} className="wd-dashboard-course" style={{ width: "300px" }}>
+              <Card>
+                <Link href={isEnrolled(c._id) ? `/courses/${c._id}/home` : "#"}
+                  className="wd-dashboard-course-link text-decoration-none text-dark"
+                  onClick={(e) => { if (!isEnrolled(c._id)) e.preventDefault(); }}>
+                  <CardImg src="/images/reactjs.jpg" variant="top" width="100%" height={160} />
+                  <CardBody>
+                    <CardTitle className="wd-dashboard-course-title text-nowrap overflow-hidden">
+                      {c.name}
+                    </CardTitle>
+                    <CardText className="wd-dashboard-course-description overflow-hidden"
+                      style={{ height: "100px" }}>
+                      {c.description}
+                    </CardText>
+
+                    <Button variant="primary" className="me-2"
+                      disabled={!isEnrolled(c._id)}>Go</Button>
+
+                    {isStudent && (
+                      isEnrolled(c._id) ? (
+                        <Button variant="danger" className="float-end"
+                          id="wd-unenroll-btn"
+                          onClick={(e) => { e.preventDefault();
+                            dispatch(unenroll({ userId: currentUser._id, courseId: c._id })); }}>
+                          Unenroll
+                        </Button>
+                      ) : (
+                        <Button variant="success" className="float-end"
+                          id="wd-enroll-btn"
+                          onClick={(e) => { e.preventDefault();
+                            dispatch(enroll({ userId: currentUser._id, courseId: c._id })); }}>
+                          Enroll
+                        </Button>
+                      )
+                    )}
+
+                    {isFaculty && (
+                      <>
+                        <Button variant="danger" className="float-end"
+                          id="wd-delete-course-click"
+                          onClick={(e) => { e.preventDefault(); dispatch(deleteCourse(c._id)); }}>
+                          Delete
+                        </Button>
+                        <Button variant="warning" className="float-end me-2"
+                          id="wd-edit-course-click"
+                          onClick={(e) => { e.preventDefault(); setCourse(c); }}>
+                          Edit
+                        </Button>
+                      </>
+                    )}
+                  </CardBody>
+                </Link>
+              </Card>
+            </Col>
+          ))}
+        </Row>
       </div>
     </div>
-);}
+  );
+}

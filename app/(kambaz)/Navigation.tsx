@@ -1,13 +1,56 @@
+"use client"
+import { AiOutlineDashboard } from "react-icons/ai";
+import { IoCalendarOutline } from "react-icons/io5";
+import { LiaBookSolid, LiaCogSolid } from "react-icons/lia";
+import { FaInbox, FaRegCircleUser } from "react-icons/fa6";
+import { ListGroup, ListGroupItem } from "react-bootstrap";
+import { usePathname } from "next/navigation";
+import { useSelector } from "react-redux";
+import { RootState } from "./store";
 import Link from "next/link";
+
 export default function KambazNavigation() {
+  const pathname = usePathname();
+  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
+  const links = [
+    { label: "Dashboard", path: "/dashboard", icon: AiOutlineDashboard },
+    { label: "Courses",   path: "/dashboard",  icon: LiaBookSolid },
+    { label: "Calendar",  path: "/Calendar",   icon: IoCalendarOutline },
+    { label: "Inbox",     path: "/Inbox",      icon: FaInbox },
+    { label: "Labs",      path: "/labs",       icon: LiaCogSolid },
+  ];
+
+  const isActive = (label: string) =>
+    pathname.toLowerCase().includes(label.toLowerCase());
+
+  const accountPath = currentUser ? "/account/profile" : "/account/signin";
+
   return (
-    <div id="wd-kambaz-navigation">
-      <a href="https://www.northeastern.edu/" id="wd-neu-link" target="_blank">Northeastern</a><br/>
-      <Link href="/account" id="wd-account-link">Account</Link><br/>
-      <Link href="/dashboard" id="wd-dashboard-link">Dashboard</Link><br/>
-      <Link href="/dashboard" id="wd-course-link">Courses</Link><br/>
-      <Link href="/calendar" id="wd-calendar-link">Calendar</Link><br/>
-      <Link href="/inbox" id="wd-inbox-link">Inbox</Link><br/>
-      <Link href="/labs" id="wd-labs-link">Labs</Link><br/>
-    </div>
-);}
+    <ListGroup className="rounded-0 position-fixed bottom-0 top-0 d-none d-md-block bg-black z-2"
+      style={{ width: 115 }} id="wd-kambaz-navigation">
+
+      <ListGroupItem className="bg-black border-0 text-center" as="a"
+        target="_blank" href="https://www.northeastern.edu/" id="wd-neu-link">
+        <img src="/images/neu.png" width="75px" alt="Northeastern University" />
+      </ListGroupItem>
+
+      <ListGroupItem as={Link} href={accountPath}
+        className={`text-center border-0
+          ${isActive("account") ? "bg-white text-danger" : "bg-black text-white"}`}>
+        <FaRegCircleUser className="fs-1 text-danger" />
+        <br />
+        Account
+      </ListGroupItem>
+
+      {links.map((link) => (
+        <ListGroupItem key={link.label} as={Link} href={link.path}
+          className={`bg-black text-center border-0
+            ${isActive(link.label) ? "text-danger bg-white" : "text-white bg-black"}`}>
+          {link.icon({ className: "fs-1 text-danger" })}
+          <br />
+          {link.label}
+        </ListGroupItem>
+      ))}
+    </ListGroup>
+  );
+}
