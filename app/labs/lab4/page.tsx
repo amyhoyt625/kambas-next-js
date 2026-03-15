@@ -1,4 +1,5 @@
 "use client"
+import { Suspense } from "react";
 import BooleanStateVariables from "./BooleanStateVariables";
 import ClickEvent from "./ClientEvent";
 import Counter from "./Counter";
@@ -35,14 +36,16 @@ export default function Lab4() {
         <ObjectStateVariable/>
         <ArrayStateVariable/>
         <ParentStateComponent/>
-        <QueryCalculator/>
-        <PathCalculator/>
-        <UrlEncoding/>
+        <Suspense fallback={<div>Loading...</div>}>
+          <QueryCalculator/>
+          <PathCalculator/>
+          <UrlEncoding/>
+        </Suspense>
         <Link href="/labs/lab4/redux">Redux Examples</Link>
-        <br></br>
-        <Link href="/labs/lab4/react-context"> React Context Examples</Link>
-        <br></br>
-        <Link href="/labs/lab4/zustand"> Zustand Examples</Link>
+        <br/>
+        <Link href="/labs/lab4/react-context">React Context Examples</Link>
+        <br/>
+        <Link href="/labs/lab4/zustand">Zustand Examples</Link>
       </div>
     </Provider>
   );
