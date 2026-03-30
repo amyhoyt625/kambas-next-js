@@ -33,6 +33,16 @@ export default function labs() {
            Lab 5: Node Server </Link>
        </li>
 
+       <li>
+         <Link href="https://github.com/amyhoyt625/kambaz-node-server-app">
+         Node Server GitHub </Link>
+       </li>
+
+       <li>
+         <Link href="https://kambaz-node-server-app-bnzg.onrender.com">
+         Node Server on Render </Link>
+       </li>
+
 
        <li>
          <Link href="/" id="wd-kambaz">
