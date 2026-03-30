@@ -40,11 +40,13 @@ export default function Dashboard() {
   };
 
   const onAddNewCourse = async () => {
+    console.log("Add clicked, course:", course);
     try {
       const newCourse = await client.createCourse(course);
+      console.log("New course created:", newCourse);
       dispatch(setCourses([...courses, newCourse]));
     } catch (error: any) {
-      console.error("Add course error:", error.response?.data || error.message);
+      console.error("Add course error:", error.response?.status, error.response?.data);
     }
   };
 
