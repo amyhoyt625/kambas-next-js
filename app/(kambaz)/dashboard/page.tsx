@@ -131,8 +131,8 @@ export default function Dashboard() {
           {displayedCourses.map((c: any) => (
             <Col key={c._id} className="wd-dashboard-course" style={{ width: "300px" }}>
               <Card>
-                <Link href={`/kambaz/courses/${c._id}/home`}
-                  className="wd-dashboard-course-link text-decoration-none text-dark">
+              <Link href={`/courses/${c._id}/home`}
+  className="wd-dashboard-course-link text-decoration-none text-dark">
                   <CardImg src="/images/reactjs.jpg" variant="top" width="100%" height={160} />
                   <CardBody>
                     <CardTitle className="wd-dashboard-course-title text-nowrap overflow-hidden">
