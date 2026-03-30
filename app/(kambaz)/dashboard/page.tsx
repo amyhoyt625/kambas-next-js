@@ -40,8 +40,12 @@ export default function Dashboard() {
   };
 
   const onAddNewCourse = async () => {
-    const newCourse = await client.createCourse(course);
-    dispatch(setCourses([...courses, newCourse]));
+    try {
+      const newCourse = await client.createCourse(course);
+      dispatch(setCourses([...courses, newCourse]));
+    } catch (error: any) {
+      console.error("Add course error:", error.response?.data || error.message);
+    }
   };
 
   const onDeleteCourse = async (courseId: string) => {
