@@ -47,6 +47,8 @@ export default function Modules() {
     fetchModules();
   }, []);
 
+  console.log("modules in state:", modules);
+  
   return (
     <div className="wd-modules">
       <ModulesControls setModuleName={setModuleName} moduleName={moduleName}

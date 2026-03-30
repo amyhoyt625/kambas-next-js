@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { modules } from "../../../database";
 import { v4 as uuidv4 } from "uuid";
+
 const initialState = {
-  modules: [],
+  modules: [] as any[],
 };
 
 const modulesSlice = createSlice({
