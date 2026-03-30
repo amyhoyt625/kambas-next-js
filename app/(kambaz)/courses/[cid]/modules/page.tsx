@@ -18,7 +18,9 @@ export default function Modules() {
   const dispatch = useDispatch();
 
   const fetchModules = async () => {
+    console.log("Fetching modules for:", cid);
     const modules = await client.findModulesForCourse(cid as string);
+    console.log("Modules fetched:", modules);
     dispatch(setModules(modules));
   };
 
