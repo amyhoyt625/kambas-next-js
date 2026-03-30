@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteAssignment } from "./reducer";
+import { deleteAssignment, setAssignments } from "./reducer";
 import { RootState } from "../../../store";
 import { ListGroup, ListGroupItem, Button, InputGroup, FormControl } from "react-bootstrap";
 import InputGroupText from "react-bootstrap/esm/InputGroupText";
@@ -11,6 +11,8 @@ import { FaPlus, FaSearch, FaTrash } from "react-icons/fa";
 import { IoEllipsisVertical } from "react-icons/io5";
 import { HiOutlinePencilSquare } from "react-icons/hi2";
 import LessonControlButtons from "../modules/LessonControlButtons";
+import { useEffect } from "react";
+import * as client from "./client";
 
 export default function Assignments() {
   const { cid } = useParams();
@@ -18,15 +20,24 @@ export default function Assignments() {
   const { assignments } = useSelector((state: RootState) => state.assignmentsReducer);
   const courseAssignments = assignments.filter((a: any) => a.course === cid);
 
-  const handleDelete = (assignmentId: string) => {
+  const fetchAssignments = async () => {
+    const assignments = await client.findAssignmentsForCourse(cid as string);
+    dispatch(setAssignments(assignments));
+  };
+
+  const onDeleteAssignment = async (assignmentId: string) => {
     if (window.confirm("Are you sure you want to delete this assignment?")) {
+      await client.deleteAssignment(assignmentId);
       dispatch(deleteAssignment(assignmentId));
     }
   };
 
+  useEffect(() => {
+    fetchAssignments();
+  }, [cid]);
+
   return (
     <div id="wd-assignments">
-      {/* Controls */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <InputGroup style={{ maxWidth: "300px" }}>
           <InputGroupText><FaSearch /></InputGroupText>
@@ -45,7 +56,6 @@ export default function Assignments() {
         </div>
       </div>
 
-      {/* Assignment List */}
       <ListGroup className="rounded-0" id="wd-assignment-list">
         <ListGroupItem className="p-0 mb-5 fs-5 border-gray">
           <div className="wd-title p-3 ps-2 bg-secondary d-flex justify-content-between align-items-center">
@@ -82,7 +92,7 @@ export default function Assignments() {
                 <div className="d-flex align-items-center gap-2">
                   <LessonControlButtons />
                   <FaTrash className="text-danger" style={{ cursor: "pointer" }}
-                    onClick={() => handleDelete(assignment._id)} />
+                    onClick={() => onDeleteAssignment(assignment._id)} />
                 </div>
               </ListGroupItem>
             ))}
