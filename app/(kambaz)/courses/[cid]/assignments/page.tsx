@@ -18,7 +18,9 @@ export default function Assignments() {
   const { cid } = useParams();
   const dispatch = useDispatch();
   const { assignments } = useSelector((state: RootState) => state.assignmentsReducer);
+  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
   const courseAssignments = assignments.filter((a: any) => a.course === cid);
+  const isFaculty = currentUser && ["FACULTY", "ADMIN", "TA"].includes((currentUser as any).role);
 
   const fetchAssignments = async () => {
     const assignments = await client.findAssignmentsForCourse(cid as string);
@@ -44,15 +46,19 @@ export default function Assignments() {
           <FormControl type="text" placeholder="Search..." id="wd-search-assignment" />
         </InputGroup>
         <div>
-          <Button variant="secondary" size="lg" className="me-2" id="wd-add-assignment-group">
-            <FaPlus className="me-1" /> Group
-          </Button>
-          <Link href={`/courses/${cid}/assignments/new`}>
-            <Button variant="danger" size="lg" id="wd-add-assignment-btn">
-              <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
-              Assignment
-            </Button>
-          </Link>
+          {isFaculty && (
+            <>
+              <Button variant="secondary" size="lg" className="me-2" id="wd-add-assignment-group">
+                <FaPlus className="me-1" /> Group
+              </Button>
+              <Link href={`/courses/${cid}/assignments/new`}>
+                <Button variant="danger" size="lg" id="wd-add-assignment-btn">
+                  <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
+                  Assignment
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
@@ -63,10 +69,12 @@ export default function Assignments() {
               <BsGripVertical className="me-2 fs-3" />
               ASSIGNMENTS 40% of Total
             </div>
-            <div>
-              <FaPlus className="me-2" />
-              <IoEllipsisVertical className="fs-4" />
-            </div>
+            {isFaculty && (
+              <div>
+                <FaPlus className="me-2" />
+                <IoEllipsisVertical className="fs-4" />
+              </div>
+            )}
           </div>
 
           <ListGroup className="rounded-0">
@@ -75,7 +83,9 @@ export default function Assignments() {
                 className="wd-assignment-list-item p-3 ps-1 d-flex justify-content-between align-items-start">
                 <div className="d-flex align-items-start">
                   <BsGripVertical className="me-2 fs-3" />
-                  <HiOutlinePencilSquare className="me-3 text-success" style={{ marginTop: "5px" }} />
+                  {isFaculty && (
+                    <HiOutlinePencilSquare className="me-3 text-success" style={{ marginTop: "5px" }} />
+                  )}
                   <div>
                     <Link href={`/courses/${cid}/assignments/${assignment._id}`}
                       className="wd-assignment-link text-dark text-decoration-none fw-bold">
@@ -91,8 +101,10 @@ export default function Assignments() {
                 </div>
                 <div className="d-flex align-items-center gap-2">
                   <LessonControlButtons />
-                  <FaTrash className="text-danger" style={{ cursor: "pointer" }}
-                    onClick={() => onDeleteAssignment(assignment._id)} />
+                  {isFaculty && (
+                    <FaTrash className="text-danger" style={{ cursor: "pointer" }}
+                      onClick={() => onDeleteAssignment(assignment._id)} />
+                  )}
                 </div>
               </ListGroupItem>
             ))}
