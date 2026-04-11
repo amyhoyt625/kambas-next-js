@@ -30,7 +30,7 @@ export default function PeopleTable({ users = [], fetchUsers }: { users?: any[];
           </tr>
         </thead>
         <tbody>
-          {users.map((user: any) => (
+          {users.filter((user: any) => user !== null).map((user: any) => (
             <tr key={user._id}>
               <td className="wd-full-name text-nowrap">
                 <span className="text-decoration-none"

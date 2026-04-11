@@ -24,6 +24,7 @@ export default function Assignments() {
 
   const fetchAssignments = async () => {
     const assignments = await client.findAssignmentsForCourse(cid as string);
+    console.log("fetched assignments:", assignments);
     dispatch(setAssignments(assignments));
   };
 
