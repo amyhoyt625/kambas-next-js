@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import { addAssignment, updateAssignment } from "../reducer";
 import { RootState } from "../../../../store";
-import * as client from "../client";
 import {
   Button, Row, Col, FormLabel, FormControl,
   FormSelect, FormCheck,
@@ -38,13 +37,11 @@ export default function AssignmentEditor() {
     }
   );
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (existing) {
-      await client.updateAssignment(assignment);
       dispatch(updateAssignment(assignment));
     } else {
-      const newAssignment = await client.createAssignmentForCourse(cid as string, assignment);
-      dispatch(addAssignment(newAssignment));
+      dispatch(addAssignment(assignment));
     }
     router.push(`/courses/${cid}/assignments`);
   };
@@ -55,12 +52,14 @@ export default function AssignmentEditor() {
 
   return (
     <div id="wd-assignments-editor" className="p-4">
+      {/* Assignment Name */}
       <div className="mb-3">
         <FormLabel htmlFor="wd-name">Assignment Name</FormLabel>
         <FormControl id="wd-name" type="text" value={assignment.title}
           onChange={(e) => setAssignment({ ...assignment, title: e.target.value })} />
       </div>
 
+      {/* Description */}
       <div className="mb-3">
         <FormLabel htmlFor="wd-description">Description</FormLabel>
         <FormControl as="textarea" id="wd-description" rows={8}
@@ -69,6 +68,7 @@ export default function AssignmentEditor() {
           placeholder="The assignment is available online. Submit a link to the landing page of your Web application running on Netlify." />
       </div>
 
+      {/* Points */}
       <Row className="mb-3">
         <Col xs={12} md={4}>
           <FormLabel htmlFor="wd-points" className="text-md-end d-block pt-2">Points</FormLabel>
@@ -79,6 +79,7 @@ export default function AssignmentEditor() {
         </Col>
       </Row>
 
+      {/* Assignment Group */}
       <Row className="mb-3">
         <Col xs={12} md={4}>
           <FormLabel htmlFor="wd-assignment-group" className="text-md-end d-block pt-2">Assignment Group</FormLabel>
@@ -91,6 +92,7 @@ export default function AssignmentEditor() {
         </Col>
       </Row>
 
+      {/* Display Grade as */}
       <Row className="mb-3">
         <Col xs={12} md={4}>
           <FormLabel htmlFor="wd-display-grade-as" className="text-md-end d-block pt-2">Display Grade as</FormLabel>
@@ -103,6 +105,7 @@ export default function AssignmentEditor() {
         </Col>
       </Row>
 
+      {/* Submission Type */}
       <Row className="mb-3">
         <Col xs={12} md={4}>
           <FormLabel className="text-md-end d-block pt-2">Submission Type</FormLabel>
@@ -122,6 +125,7 @@ export default function AssignmentEditor() {
         </Col>
       </Row>
 
+      {/* Assign */}
       <Row className="mb-3">
         <Col xs={12} md={4}>
           <FormLabel className="text-md-end d-block pt-2">Assign</FormLabel>
@@ -154,6 +158,7 @@ export default function AssignmentEditor() {
         </Col>
       </Row>
 
+      {/* Buttons */}
       <hr />
       <Row>
         <Col className="text-end">

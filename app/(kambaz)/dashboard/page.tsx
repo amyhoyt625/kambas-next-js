@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { setCourses } from "../courses/reducer";
-import { enroll, unenroll } from "../enrollments/reducer";
+import { setEnrollments, enroll, unenroll } from "../enrollments/reducer";
 import { RootState } from "../store";
 import * as client from "../courses/client";
 import {
@@ -27,23 +27,31 @@ export default function Dashboard() {
 
   const fetchCourses = async () => {
     try {
-      if (showAllCourses) {
-        const allCourses = await client.fetchAllCourses();
-        dispatch(setCourses(allCourses));
-      } else {
-        const myCourses = await client.findMyCourses();
-        dispatch(setCourses(myCourses));
-      }
+      const allCourses = await client.fetchAllCourses();
+      dispatch(setCourses(allCourses));
     } catch (error) {
       console.error(error);
     }
   };
 
+  const fetchEnrollments = async () => {
+    try {
+      const data = await enrollmentsClient.fetchEnrollmentsForUser(currentUser._id);
+      dispatch(setEnrollments(data));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (!currentUser) return;  // add this line
+    fetchEnrollments();
+    fetchCourses();
+  }, [currentUser, showAllCourses]);
+
   const onAddNewCourse = async () => {
-    console.log("Add clicked, course:", course);
     try {
       const newCourse = await client.createCourse(course);
-      console.log("New course created:", newCourse);
       dispatch(setCourses([...courses, newCourse]));
     } catch (error: any) {
       console.error("Add course error:", error.response?.status, error.response?.data);
@@ -65,16 +73,14 @@ export default function Dashboard() {
   const handleEnroll = async (courseId: string) => {
     await enrollmentsClient.enrollUserInCourse(currentUser._id, courseId);
     dispatch(enroll({ userId: currentUser._id, courseId }));
+    await fetchCourses();
   };
 
   const handleUnenroll = async (courseId: string) => {
     await enrollmentsClient.unenrollUserFromCourse(currentUser._id, courseId);
     dispatch(unenroll({ userId: currentUser._id, courseId }));
+    await fetchCourses();
   };
-
-  useEffect(() => {
-    fetchCourses();
-  }, [currentUser, showAllCourses]);
 
   if (!currentUser) return <div>Please sign in to view the dashboard.</div>;
 
@@ -131,8 +137,8 @@ export default function Dashboard() {
           {displayedCourses.map((c: any) => (
             <Col key={c._id} className="wd-dashboard-course" style={{ width: "300px" }}>
               <Card>
-              <Link href={`/courses/${c._id}/home`}
-  className="wd-dashboard-course-link text-decoration-none text-dark">
+                <Link href={`/courses/${c._id}/home`}
+                  className="wd-dashboard-course-link text-decoration-none text-dark">
                   <CardImg src="/images/reactjs.jpg" variant="top" width="100%" height={160} />
                   <CardBody>
                     <CardTitle className="wd-dashboard-course-title text-nowrap overflow-hidden">

@@ -3,6 +3,13 @@ const axiosWithCredentials = axios.create({ withCredentials: true });
 const HTTP_SERVER = process.env.NEXT_PUBLIC_HTTP_SERVER;
 const USERS_API = `${HTTP_SERVER}/api/users`;
 
+export const fetchEnrollmentsForUser = async (userId: string) => {
+  const response = await axiosWithCredentials.get(
+    `${USERS_API}/${userId}/courses`
+  );
+  return response.data;
+};
+
 export const enrollUserInCourse = async (userId: string, courseId: string) => {
   const response = await axiosWithCredentials.post(
     `${USERS_API}/${userId}/courses/${courseId}`
