@@ -115,7 +115,7 @@ export default function Quizzes() {
 
           <ListGroup className="rounded-0">
             {/* empty state message for faculty */}
-            {courseQuizzes.length === 0 && (
+            {courseQuizzes.length === 0 && isFaculty && (
               <ListGroupItem className="text-center text-muted p-4">
                 No quizzes yet. Click <b>+ Quiz</b> to add one.
               </ListGroupItem>
