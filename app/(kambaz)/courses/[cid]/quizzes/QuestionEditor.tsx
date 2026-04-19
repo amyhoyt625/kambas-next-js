@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Button, FormControl, FormSelect, FormCheck, Row, Col } from "react-bootstrap";
+import { Button, FormControl, FormSelect, FormCheck } from "react-bootstrap";
 import { v4 as uuidv4 } from "uuid";
 import { FaTrash } from "react-icons/fa";
 
@@ -9,13 +9,11 @@ export default function QuestionEditor({
 }: {
   questions: any[], onChange: (questions: any[]) => void
 }) {
-  // track which question is being edited by its id
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftQuestion, setDraftQuestion] = useState<any | null>(null);
 
-  // total points is sum of all question points
   const totalPoints = questions.reduce((sum, q) => sum + (q.points || 0), 0);
 
-  // add a new multiple choice question and open it for editing
   const handleAddQuestion = () => {
     const newQuestion = {
       _id: uuidv4(),
@@ -30,67 +28,89 @@ export default function QuestionEditor({
       correctAnswer: true,
       answers: [],
     };
-    const updated = [...questions, newQuestion];
-    onChange(updated);
+    onChange([...questions, newQuestion]);
     setEditingId(newQuestion._id);
+    setDraftQuestion({ ...newQuestion });
   };
 
-  // update a single field on a question
-  const handleUpdateQuestion = (qid: string, field: string, value: any) => {
-    onChange(questions.map(q => q._id === qid ? { ...q, [field]: value } : q));
-  };
-
-  // delete a question
   const handleDeleteQuestion = (qid: string) => {
     onChange(questions.filter(q => q._id !== qid));
-    if (editingId === qid) setEditingId(null);
+    if (editingId === qid) {
+      setEditingId(null);
+      setDraftQuestion(null);
+    }
   };
 
-  // update a specific choice in a multiple choice question
-  const handleUpdateChoice = (qid: string, choiceId: string, field: string, value: any) => {
-    const q = questions.find(q => q._id === qid);
-    const updatedChoices = q.choices.map((c: any) =>
+  // ---------- DRAFT HELPERS ----------
+  const updateDraftField = (field: string, value: any) => {
+    setDraftQuestion({ ...draftQuestion, [field]: value });
+  };
+
+  const updateChoice = (choiceId: string, field: string, value: any) => {
+    const updated = draftQuestion.choices.map((c: any) =>
       c.id === choiceId ? { ...c, [field]: value } : c
     );
-    handleUpdateQuestion(qid, "choices", updatedChoices);
+    updateDraftField("choices", updated);
   };
 
-  // set one choice as correct, unset all others
-  const handleSetCorrectChoice = (qid: string, choiceId: string) => {
-    const q = questions.find(q => q._id === qid);
-    const updatedChoices = q.choices.map((c: any) => ({ ...c, isCorrect: c.id === choiceId }));
-    handleUpdateQuestion(qid, "choices", updatedChoices);
+  const setCorrectChoice = (choiceId: string) => {
+    const updated = draftQuestion.choices.map((c: any) => ({
+      ...c,
+      isCorrect: c.id === choiceId
+    }));
+    updateDraftField("choices", updated);
   };
 
-  // add a new choice to a multiple choice question
-  const handleAddChoice = (qid: string) => {
-    const q = questions.find(q => q._id === qid);
-    const updatedChoices = [...q.choices, { id: uuidv4(), text: "", isCorrect: false }];
-    handleUpdateQuestion(qid, "choices", updatedChoices);
+  const addChoice = () => {
+    updateDraftField("choices", [
+      ...draftQuestion.choices,
+      { id: uuidv4(), text: "", isCorrect: false }
+    ]);
   };
 
-  // add a possible answer to fill in the blank
-  const handleAddAnswer = (qid: string) => {
-    const q = questions.find(q => q._id === qid);
-    handleUpdateQuestion(qid, "answers", [...q.answers, ""]);
+  const removeChoice = (choiceId: string) => {
+    updateDraftField(
+      "choices",
+      draftQuestion.choices.filter((c: any) => c.id !== choiceId)
+    );
   };
 
-  // update a specific answer in fill in the blank
-  const handleUpdateAnswer = (qid: string, index: number, value: string) => {
-    const q = questions.find(q => q._id === qid);
-    const updated = q.answers.map((a: string, i: number) => i === index ? value : a);
-    handleUpdateQuestion(qid, "answers", updated);
+  const addAnswer = () => {
+    updateDraftField("answers", [...draftQuestion.answers, ""]);
   };
 
-  // remove an answer from fill in the blank
-  const handleRemoveAnswer = (qid: string, index: number) => {
-    const q = questions.find(q => q._id === qid);
-    handleUpdateQuestion(qid, "answers", q.answers.filter((_: any, i: number) => i !== index));
+  const updateAnswer = (index: number, value: string) => {
+    const updated = draftQuestion.answers.map((a: string, i: number) =>
+      i === index ? value : a
+    );
+    updateDraftField("answers", updated);
+  };
+
+  const removeAnswer = (index: number) => {
+    updateDraftField(
+      "answers",
+      draftQuestion.answers.filter((_: any, i: number) => i !== index)
+    );
+  };
+
+  const handleSave = () => {
+    onChange(
+      questions.map(q =>
+        q._id === draftQuestion._id ? draftQuestion : q
+      )
+    );
+    setEditingId(null);
+    setDraftQuestion(null);
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setDraftQuestion(null);
   };
 
   return (
     <div>
-      {/* total points display */}
+      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <span className="fw-bold">Total Points: {totalPoints}</span>
         <Button variant="secondary" onClick={handleAddQuestion}>
@@ -98,137 +118,158 @@ export default function QuestionEditor({
         </Button>
       </div>
 
-      {/* empty state */}
       {questions.length === 0 && (
         <div className="text-center text-muted p-4 border rounded">
-          No questions yet. Click <b>+ New Question</b> to add one.
+          No questions yet. Click <b>+ New Question</b>.
         </div>
       )}
 
-      {/* question list */}
-      {questions.map((q, index) => (
-        <div key={q._id} className="border rounded mb-3 p-3">
-          {/* question header - always visible */}
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <div className="d-flex align-items-center gap-2">
-              <FormControl
-                style={{ maxWidth: "200px" }}
-                value={q.title}
-                onChange={(e) => handleUpdateQuestion(q._id, "title", e.target.value)}
-                placeholder="Question title" />
-              <FormSelect
-                style={{ maxWidth: "180px" }}
-                value={q.type}
-                onChange={(e) => handleUpdateQuestion(q._id, "type", e.target.value)}>
-                <option value="MULTIPLE_CHOICE">Multiple Choice</option>
-                <option value="TRUE_FALSE">True/False</option>
-                <option value="FILL_IN_BLANK">Fill in the Blank</option>
-              </FormSelect>
-              <span className="text-muted">pts:</span>
-              <FormControl
-                type="number"
-                style={{ maxWidth: "70px" }}
-                value={q.points}
-                onChange={(e) => handleUpdateQuestion(q._id, "points", Number(e.target.value))} />
-            </div>
-            <div className="d-flex gap-2">
-              {editingId !== q._id && (
-                <Button variant="outline-secondary" size="sm"
-                  onClick={() => setEditingId(q._id)}>
-                  Edit
-                </Button>
-              )}
-              <FaTrash className="text-danger mt-2" style={{ cursor: "pointer" }}
-                onClick={() => handleDeleteQuestion(q._id)} />
-            </div>
-          </div>
+      {questions.map((q) => {
+        const isEditing = editingId === q._id;
+        const data = isEditing ? draftQuestion : q;
 
-          {/* question edit form - only show when editing */}
-          {editingId === q._id && (
-            <div className="mt-3">
-              {/* question text */}
-              <FormControl as="textarea" rows={3} className="mb-3"
-                placeholder="Enter question text"
-                value={q.question}
-                onChange={(e) => handleUpdateQuestion(q._id, "question", e.target.value)} />
+        return (
+          <div key={q._id} className="border rounded mb-3 p-3">
+            {/* Header */}
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <div className="d-flex align-items-center gap-2">
+                <FormControl
+                  style={{ maxWidth: "200px" }}
+                  value={data.title}
+                  disabled={!isEditing}
+                  onChange={(e) => updateDraftField("title", e.target.value)}
+                />
+                <FormSelect
+                  style={{ maxWidth: "180px" }}
+                  value={data.type}
+                  disabled={!isEditing}
+                  onChange={(e) => updateDraftField("type", e.target.value)}
+                >
+                  <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                  <option value="TRUE_FALSE">True/False</option>
+                  <option value="FILL_IN_BLANK">Fill in the Blank</option>
+                </FormSelect>
+                <FormControl
+                  type="number"
+                  style={{ maxWidth: "70px" }}
+                  value={data.points}
+                  disabled={!isEditing}
+                  onChange={(e) => updateDraftField("points", Number(e.target.value))}
+                />
+              </div>
 
-              {/* Multiple Choice answers */}
-              {q.type === "MULTIPLE_CHOICE" && (
-                <div>
-                  <div className="fw-bold mb-2">Answers:</div>
-                  {q.choices.map((choice: any) => (
-                    <div key={choice.id} className="d-flex align-items-center gap-2 mb-2">
-                      {/* radio selects this as the correct answer */}
-                      <input type="radio" name={`correct-${q._id}`}
-                        checked={choice.isCorrect}
-                        onChange={() => handleSetCorrectChoice(q._id, choice.id)} />
-                      <FormControl
-                        placeholder="Choice text"
-                        value={choice.text}
-                        onChange={(e) => handleUpdateChoice(q._id, choice.id, "text", e.target.value)} />
-                        <Button variant="outline-danger" size="sm"
-                          onClick={() => handleUpdateQuestion(q._id, "choices", q.choices.filter((c: any) => c.id !== choice.id))}>
-                          Remove
-                        </Button>
-                    </div>
-                  ))}
-                  <Button variant="outline-secondary" size="sm" onClick={() => handleAddChoice(q._id)}>
-                    + Add Another Answer
+              <div className="d-flex gap-2">
+                {!isEditing && (
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setEditingId(q._id);
+                      setDraftQuestion({ ...q });
+                    }}
+                  >
+                    Edit
                   </Button>
-                </div>
-              )}
-
-              {/* True/False answers */}
-              {q.type === "TRUE_FALSE" && (
-                <div>
-                  <div className="fw-bold mb-2">Correct Answer:</div>
-                  <FormCheck type="radio" label="True" name={`tf-${q._id}`}
-                    checked={q.correctAnswer === true}
-                    onChange={() => handleUpdateQuestion(q._id, "correctAnswer", true)} />
-                  <FormCheck type="radio" label="False" name={`tf-${q._id}`}
-                    checked={q.correctAnswer === false}
-                    onChange={() => handleUpdateQuestion(q._id, "correctAnswer", false)} />
-                </div>
-              )}
-
-              {/* Fill in the Blank answers */}
-              {q.type === "FILL_IN_BLANK" && (
-                <div>
-                  <div className="fw-bold mb-2">Possible Correct Answers:</div>
-                  {q.answers.map((answer: string, i: number) => (
-                    <div key={i} className="d-flex gap-2 mb-2">
-                      <FormControl
-                        placeholder="Possible answer"
-                        value={answer}
-                        onChange={(e) => handleUpdateAnswer(q._id, i, e.target.value)} />
-                      <Button variant="outline-danger" size="sm"
-                        onClick={() => handleRemoveAnswer(q._id, i)}>
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                  <Button variant="outline-secondary" size="sm"
-                    onClick={() => handleAddAnswer(q._id)}>
-                    + Add Another Answer
-                  </Button>
-                </div>
-              )}
-
-              {/* Cancel and Save buttons */}
-              <div className="d-flex gap-2 mt-3">
-                <Button variant="secondary" size="sm"
-                  onClick={() => setEditingId(null)}>
-                  Cancel
-                </Button>
-                <Button variant="danger" size="sm"
-                  onClick={() => setEditingId(null)}>
-                  Update Question
-                </Button>
+                )}
+                <FaTrash
+                  className="text-danger mt-2"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleDeleteQuestion(q._id)}
+                />
               </div>
             </div>
-          )}
-        </div>
-      ))}
+
+            {/* EDIT MODE */}
+            {isEditing && (
+              <div className="mt-3">
+                <FormControl
+                  as="textarea"
+                  rows={3}
+                  className="mb-3"
+                  value={data.question}
+                  onChange={(e) => updateDraftField("question", e.target.value)}
+                />
+
+                {/* MULTIPLE CHOICE */}
+                {data.type === "MULTIPLE_CHOICE" && (
+                  <>
+                    {data.choices.map((choice: any) => (
+                      <div key={choice.id} className="d-flex gap-2 mb-2">
+                        <input
+                          type="radio"
+                          checked={choice.isCorrect}
+                          onChange={() => setCorrectChoice(choice.id)}
+                        />
+                    <FormControl
+                      as="textarea"
+                      rows={2}
+                      value={choice.text}
+                      onChange={(e) =>
+                        updateChoice(choice.id, "text", e.target.value)
+                      }
+                    />
+                        <Button size="sm" onClick={() => removeChoice(choice.id)}>
+                          Remove
+                        </Button>
+                      </div>
+                    ))}
+                    <Button size="sm" onClick={addChoice}>
+                      + Add Answer
+                    </Button>
+                  </>
+                )}
+
+                {/* TRUE/FALSE */}
+                {data.type === "TRUE_FALSE" && (
+                  <>
+                    <FormCheck
+                      type="radio"
+                      label="True"
+                      checked={data.correctAnswer === true}
+                      onChange={() => updateDraftField("correctAnswer", true)}
+                    />
+                    <FormCheck
+                      type="radio"
+                      label="False"
+                      checked={data.correctAnswer === false}
+                      onChange={() => updateDraftField("correctAnswer", false)}
+                    />
+                  </>
+                )}
+
+                {/* FILL IN BLANK */}
+                {data.type === "FILL_IN_BLANK" && (
+                  <>
+                    {data.answers.map((ans: string, i: number) => (
+                      <div key={i} className="d-flex gap-2 mb-2">
+                        <FormControl
+                          value={ans}
+                          onChange={(e) => updateAnswer(i, e.target.value)}
+                        />
+                        <Button size="sm" onClick={() => removeAnswer(i)}>
+                          Remove
+                        </Button>
+                      </div>
+                    ))}
+                    <Button size="sm" onClick={addAnswer}>
+                      + Add Answer
+                    </Button>
+                  </>
+                )}
+
+                {/* ACTIONS */}
+                <div className="d-flex gap-2 mt-3">
+                  <Button size="sm" variant="secondary" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                  <Button size="sm" variant="danger" onClick={handleSave}>
+                    Update Question
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
