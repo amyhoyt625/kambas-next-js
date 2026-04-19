@@ -9,6 +9,8 @@ import { setQuizzes } from "../reducer";
 import * as client from "../client";
 import { Button, Row, Col } from "react-bootstrap";
 import { FaPencil } from "react-icons/fa6";
+import { togglePublish } from "../reducer";
+
 
 export default function QuizDetails() {
   const { cid, qid } = useParams();
@@ -38,6 +40,18 @@ export default function QuizDetails() {
       {/* Preview and Edit buttons for faculty */}
       {isFaculty && (
         <div className="d-flex justify-content-end mb-4 gap-2">
+          <Button
+            variant={quiz.published ? "danger" : "success"}
+            onClick={async () => {
+              if (quiz.published) {
+                await client.unpublishQuiz(quiz._id);
+              } else {
+                await client.publishQuiz(quiz._id);
+              }
+              dispatch(togglePublish(quiz._id)); // added
+            }}>
+            {quiz.published ? "Unpublish" : "Publish"} {/* added */}
+          </Button>
           <Button variant="secondary"
             onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/preview`)}>
             Preview

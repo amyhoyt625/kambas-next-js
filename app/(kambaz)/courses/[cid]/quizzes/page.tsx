@@ -27,8 +27,12 @@ export default function Quizzes() {
   // only show quizzes for this course and filters for student vs. faculty 
   const courseQuizzes = quizzes.filter((q: any) => {
     if (q.course !== cid) return false;
-    if (!isFaculty && !q.published) return false; // hide unpublished from students
+    if (!isFaculty && !q.published) return false;
     return true;
+  }).sort((a: any, b: any) => {  // added
+    if (!a.availableDate) return 1;
+    if (!b.availableDate) return -1;
+    return new Date(a.availableDate).getTime() - new Date(b.availableDate).getTime();
   });
   
   // track which quiz's context menu is open
