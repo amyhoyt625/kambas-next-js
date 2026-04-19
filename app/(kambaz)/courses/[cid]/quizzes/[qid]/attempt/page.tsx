@@ -15,6 +15,7 @@ export default function QuizAttempt() {
   const [answers, setAnswers] = useState<{[key: string]: any}>({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0); // added
 
   useEffect(() => {
     const load = async () => {
@@ -46,7 +47,7 @@ export default function QuizAttempt() {
         if (q.answers.includes(selected)) correct++;
       }
     });
-  
+
     setScore(correct);
     await createSubmission(qid as string, {
       userId: (currentUser as any)._id,
@@ -59,125 +60,194 @@ export default function QuizAttempt() {
 
   if (!quiz) return <div>Loading...</div>;
 
-  // phase 1: student has a previous submission - show results
-if (submission && !submitted) {
+  // results
+  if (submission && !submitted) {
+    return (
+      <div className="p-4">
+        <h2>{quiz.title} - Last Attempt Results</h2>
+        <h4>Score: {submission.score} / {questions.length}</h4>
+        <p>Attempts used: {attemptsMade} / {attemptsAllowed}</p>
+        <hr />
+        {questions.map((q: any, index: number) => {
+          const selected = submission.answers[q._id];
+          let isCorrect = false;
+          if (q.type === "MULTIPLE_CHOICE") {
+            const correctChoice = q.choices.find((c: any) => c.isCorrect);
+            isCorrect = correctChoice && selected === correctChoice.id;
+          }
+          if (q.type === "TRUE_FALSE") isCorrect = selected === q.correctAnswer;
+          if (q.type === "FILL_IN_BLANK") isCorrect = q.answers.includes(selected);
+
+          return (
+            <div key={q._id} className={`border rounded p-3 mb-3 ${isCorrect ? "border-success" : "border-danger"}`}>
+              <div className="d-flex justify-content-between">
+                <b>Question {index + 1}</b>
+                <span>{isCorrect ? "Correct" : "Wrong"}</span>
+              </div>
+              <p className="mt-2">{q.question}</p>
+            </div>
+          );
+        })}
+        {hasAttemptsLeft && (
+          <Button variant="danger" onClick={() => setSubmission(null)}>
+            Take Again
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  if (submitted) {
+    return (
+      <div className="p-4">
+        <h2>{quiz.title} - Results</h2>
+        <h4>Score: {score} / {questions.length}</h4>
+        <p>Attempts used: {attemptsMade + 1} / {attemptsAllowed}</p>
+        <hr />
+        {questions.map((q: any, index: number) => {
+          const selected = answers[q._id];
+          let isCorrect = false;
+          if (q.type === "MULTIPLE_CHOICE") {
+            const correctChoice = q.choices.find((c: any) => c.isCorrect);
+            isCorrect = correctChoice && selected === correctChoice.id;
+          }
+          if (q.type === "TRUE_FALSE") isCorrect = selected === q.correctAnswer;
+          if (q.type === "FILL_IN_BLANK") isCorrect = q.answers.includes(selected);
+
+          return (
+            <div key={q._id} className={`border rounded p-3 mb-3 ${isCorrect ? "border-success" : "border-danger"}`}>
+              <div className="d-flex justify-content-between">
+                <b>Question {index + 1}</b>
+                <span>{isCorrect ? "Correct" : "Wrong"}</span>
+              </div>
+              <p className="mt-2">{q.question}</p>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  const q = questions[currentIndex]; //single question
+
   return (
     <div className="p-4">
-      <h2>{quiz.title} - Last Attempt Results</h2>
-      <h4>Score: {submission.score} / {questions.length}</h4>
-      <p>Attempts used: {attemptsMade} / {attemptsAllowed}</p>
+      <h2>{quiz.title}</h2>
+      <p>{quiz.description}</p>
       <hr />
-      {questions.map((q: any, index: number) => {
-        const selected = submission.answers[q._id];
-        let isCorrect = false;
-        if (q.type === "MULTIPLE_CHOICE") {
-          const correctChoice = q.choices.find((c: any) => c.isCorrect);
-          isCorrect = correctChoice && selected === correctChoice.id;
-        }
-        if (q.type === "TRUE_FALSE") isCorrect = selected === q.correctAnswer;
-        if (q.type === "FILL_IN_BLANK") isCorrect = q.answers.includes(selected);
 
-        return (
-          <div key={q._id} className={`border rounded p-3 mb-3 ${isCorrect ? "border-success" : "border-danger"}`}>
-            <div className="d-flex justify-content-between">
-              <b>Question {index + 1}</b>
-              <span>{isCorrect ? "Correct" : "Wrong"}</span>
-            </div>
-            <p className="mt-2">{q.question}</p>
-          </div>
-        );
-      })}
-      {hasAttemptsLeft && (
-        <Button variant="danger" onClick={() => setSubmission(null)}>
-          Take Again
-        </Button>
-      )}
-    </div>
-  );
-}
-
-// phase 2: just submitted - show new results
-if (submitted) {
-  return (
-    <div className="p-4">
-      <h2>{quiz.title} - Results</h2>
-      <h4>Score: {score} / {questions.length}</h4>
-      <p>Attempts used: {attemptsMade + 1} / {attemptsAllowed}</p>
-      <hr />
-      {questions.map((q: any, index: number) => {
-        const selected = answers[q._id];
-        let isCorrect = false;
-        if (q.type === "MULTIPLE_CHOICE") {
-          const correctChoice = q.choices.find((c: any) => c.isCorrect);
-          isCorrect = correctChoice && selected === correctChoice.id;
-        }
-        if (q.type === "TRUE_FALSE") isCorrect = selected === q.correctAnswer;
-        if (q.type === "FILL_IN_BLANK") isCorrect = q.answers.includes(selected);
-
-        return (
-          <div key={q._id} className={`border rounded p-3 mb-3 ${isCorrect ? "border-success" : "border-danger"}`}>
-            <div className="d-flex justify-content-between">
-              <b>Question {index + 1}</b>
-              <span>{isCorrect ? "✅ Correct" : "❌ Wrong"}</span>
-            </div>
-            <p className="mt-2">{q.question}</p>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// phase 3: taking the quiz
-return (
-  <div className="p-4">
-    <h2>{quiz.title}</h2>
-    <p>{quiz.description}</p>
-    <hr />
-    {questions.map((q: any, index: number) => (
-      <div key={q._id} className="border rounded p-3 mb-3">
+      {/* show 1 question */}
+      <div className="border rounded p-3 mb-3">
         <div className="d-flex justify-content-between">
-          <b>Question {index + 1}</b>
+          <b>Question {currentIndex + 1}</b>
           <span>{q.points} pts</span>
         </div>
         <p className="mt-2">{q.question}</p>
 
+        {/* Multiple Choice */}
         {q.type === "MULTIPLE_CHOICE" && (
           <div className="mt-2">
             {q.choices.map((choice: any) => (
               <div key={choice.id} className="mb-1">
-                <input type="radio" name={`question-${q._id}`} className="me-2"
-                  onChange={() => setAnswers({ ...answers, [q._id]: choice.id })} />
+                <input
+                  type="radio"
+                  name={`question-${q._id}`}
+                  className="me-2"
+                  checked={answers[q._id] === choice.id} // change
+                  onChange={() =>
+                    setAnswers({ ...answers, [q._id]: choice.id })
+                  }
+                />
                 {choice.text}
               </div>
             ))}
           </div>
         )}
 
+        {/* True/False */}
         {q.type === "TRUE_FALSE" && (
           <div className="mt-2">
             <div className="mb-1">
-              <input type="radio" name={`question-${q._id}`} className="me-2"
-                onChange={() => setAnswers({ ...answers, [q._id]: true })} />
+              <input
+                type="radio"
+                name={`question-${q._id}`}
+                className="me-2"
+                checked={answers[q._id] === true} //change
+                onChange={() =>
+                  setAnswers({ ...answers, [q._id]: true })
+                }
+              />
               True
             </div>
             <div className="mb-1">
-              <input type="radio" name={`question-${q._id}`} className="me-2"
-                onChange={() => setAnswers({ ...answers, [q._id]: false })} />
+              <input
+                type="radio"
+                name={`question-${q._id}`}
+                className="me-2"
+                checked={answers[q._id] === false} // change
+                onChange={() =>
+                  setAnswers({ ...answers, [q._id]: false })
+                }
+              />
               False
             </div>
           </div>
         )}
 
+        {/* Fill in the Blank */}
         {q.type === "FILL_IN_BLANK" && (
           <div className="mt-2">
-            <input type="text" className="form-control" placeholder="Your answer..."
-              onChange={(e) => setAnswers({ ...answers, [q._id]: e.target.value })} />
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Your answer..."
+              value={answers[q._id] || ""} // change
+              onChange={(e) =>
+                setAnswers({
+                  ...answers,
+                  [q._id]: e.target.value,
+                })
+              }
+            />
           </div>
         )}
       </div>
-    ))}
-    <Button variant="danger" onClick={handleSubmit}>Submit Quiz</Button>
-  </div>
-);
+
+      {/* navigation */}
+      <div className="d-flex justify-content-between mt-3">
+        <Button
+          disabled={currentIndex === 0}
+          onClick={() => setCurrentIndex(currentIndex - 1)}
+        >
+          Previous
+        </Button>
+
+        <Button
+          disabled={currentIndex === questions.length - 1}
+          onClick={() => setCurrentIndex(currentIndex + 1)}
+        >
+          Next
+        </Button>
+      </div>
+
+      {/* jump buttons */}
+      <div className="mt-3">
+        {questions.map((_: any, i: number) => (
+          <Button
+            key={i}
+            size="sm"
+            className="me-2"
+            variant={i === currentIndex ? "primary" : "outline-secondary"}
+            onClick={() => setCurrentIndex(i)}
+          >
+            {i + 1}
+          </Button>
+        ))}
+      </div>
+
+      <Button className="mt-4" variant="danger" onClick={handleSubmit}>
+        Submit Quiz
+      </Button>
+    </div>
+  );
 }
