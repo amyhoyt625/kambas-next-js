@@ -1,15 +1,24 @@
-"use client";
+//This is page that students see instead of preview (which is for faculty)
+//handles student interaction, score, and submissions for quizzes and displays UI
+
+
+
+"use client"; // ensure runs on client side
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../store";
-import { findQuizById, getSubmission, createSubmission } from "../../client";
+import { findQuizById, getSubmission, createSubmission } from "../../client"; //api functions to fetch quiz data and handle student submissions
 import { Button } from "react-bootstrap";
 
 export default function QuizAttempt() {
   const { qid, cid } = useParams();
   const router = useRouter();
+
+  // get the currently logged-in user from Redux store (holds state of app, alerts components when state changes so UI can rerender)
   const { currentUser } = useSelector((state: RootState) => state.accountReducer);
+  
+  //local state to store data
   const [quiz, setQuiz] = useState<any>(null);
   const [submission, setSubmission] = useState<any>(null);
   const [answers, setAnswers] = useState<{[key: string]: any}>({});
@@ -17,21 +26,26 @@ export default function QuizAttempt() {
   const [score, setScore] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0); // added
 
+  //fetch quiz and prev submission when loads
   useEffect(() => {
     const load = async () => {
       const quizData = await findQuizById(qid as string);
       setQuiz(quizData);
+
+      //get student's prev submission if have
       const sub = await getSubmission(qid as string, (currentUser as any)._id);
       setSubmission(sub);
     };
     load();
   }, [qid]);
 
-  const questions = quiz?.questions || [];
+  //tracker values 
+  const questions = quiz?.questions || []; //fall back on empty (error catch)
   const attemptsMade = submission ? submission.attemptNumber : 0;
   const attemptsAllowed = quiz?.multipleAttempts ? quiz.howManyAttempts : 1;
   const hasAttemptsLeft = attemptsMade < attemptsAllowed;
 
+  //submission handler
   const handleSubmit = async () => {
     let correct = 0;
     questions.forEach((q: any) => {
@@ -48,19 +62,24 @@ export default function QuizAttempt() {
       }
     });
 
+    //save score locally 
     setScore(correct);
+
+    //send submissions to backend
     await createSubmission(qid as string, {
       userId: (currentUser as any)._id,
       courseId: cid,
       answers,
       score: correct,
     });
+
+    //mark as submitted and switches to results view UI
     setSubmitted(true);
   };
 
   if (!quiz) return <div>Loading...</div>;
 
-  // results
+  //show prev results
   if (submission && !submitted) {
     return (
       <div className="p-4">
@@ -68,11 +87,16 @@ export default function QuizAttempt() {
         <h4>Score: {submission.score} / {questions.length}</h4>
         <p>Attempts used: {attemptsMade} / {attemptsAllowed}</p>
         <hr />
+        {/* go through questions and show correctness */}
         {questions.map((q: any, index: number) => {
           const selected = submission.answers[q._id];
           let isCorrect = false;
+
+          //check correctness based on question type
           if (q.type === "MULTIPLE_CHOICE") {
+            //find the choice object in the list that is marked as correct
             const correctChoice = q.choices.find((c: any) => c.isCorrect);
+            //set isCorrect to true only if a correct choice exists AND the user's selected answer matches its ID
             isCorrect = correctChoice && selected === correctChoice.id;
           }
           if (q.type === "TRUE_FALSE") isCorrect = selected === q.correctAnswer;
@@ -88,6 +112,8 @@ export default function QuizAttempt() {
             </div>
           );
         })}
+
+        {/* handle retakes */}
         {hasAttemptsLeft && (
           <Button variant="danger" onClick={() => setSubmission(null)}>
             Take Again
@@ -97,6 +123,7 @@ export default function QuizAttempt() {
     );
   }
 
+  //show current results after submit
   if (submitted) {
     return (
       <div className="p-4">
@@ -146,23 +173,24 @@ export default function QuizAttempt() {
 
         {/* Multiple Choice */}
         {q.type === "MULTIPLE_CHOICE" && (
-          <div className="mt-2">
-            {q.choices.map((choice: any) => (
-              <div key={choice.id} className="mb-1">
-                <input
-                  type="radio"
-                  name={`question-${q._id}`}
-                  className="me-2"
-                  checked={answers[q._id] === choice.id} // change
-                  onChange={() =>
-                    setAnswers({ ...answers, [q._id]: choice.id })
-                  }
-                />
-                {choice.text}
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="mt-2"> 
+          {/* loop through each choice and render a radio button */}
+          {q.choices.map((choice: any) => (
+            <div key={choice.id} className="mb-1"> 
+              <input
+                type="radio" 
+                name={`question-${q._id}`} // groups options so only one can be selected per question
+                className="me-2" // adds spacing to the right of the input
+                checked={answers[q._id] === choice.id} // checks if this choice is currently selected
+                onChange={() =>
+                  setAnswers({ ...answers, [q._id]: choice.id }) // update state with selected answer
+                }/>
+              {choice.text} {/* display the text of the choice */}
+            </div>
+          ))}
+
+        </div>
+      )}
 
         {/* True/False */}
         {q.type === "TRUE_FALSE" && (

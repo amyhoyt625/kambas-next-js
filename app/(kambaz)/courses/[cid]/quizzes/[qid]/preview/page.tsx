@@ -1,3 +1,5 @@
+//this page is to preview the quiz on the Faculty side
+//doesn't save answers to db like student side does becuase not actually a real submission
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
@@ -7,6 +9,8 @@ import { Button } from "react-bootstrap";
 export default function QuizPreview() {
   const { qid, cid } = useParams(); 
   const router = useRouter();
+
+  //local state
   const [quiz, setQuiz] = useState<any>(null);
   const [answers, setAnswers] = useState<{[key: string]: any}>({});
   const [submitted, setSubmitted] = useState(false);
@@ -21,7 +25,7 @@ export default function QuizPreview() {
     load();
   }, [qid]);
 
-  // grading functionality (UNCHANGED)
+  // grading functionality 
   const handleSubmit = () => {
     let correct = 0;
 
@@ -42,6 +46,7 @@ export default function QuizPreview() {
       }
     });
 
+    //save locally
     setScore(correct);
     setSubmitted(true);
   };
@@ -84,6 +89,7 @@ export default function QuizPreview() {
           );
         })}
 
+      {/* button to let instructor to go directly back to edit page */}
         <Button
           variant="danger"
           onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/edit`)}

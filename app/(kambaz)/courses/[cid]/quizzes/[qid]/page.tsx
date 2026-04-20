@@ -1,4 +1,4 @@
-//detail page
+//This is the details page so users can see description/attributes of the quiz
 
 "use client";
 import { useParams, useRouter } from "next/navigation";
@@ -16,17 +16,19 @@ export default function QuizDetails() {
   const { cid, qid } = useParams();
   const router = useRouter();
   const dispatch = useDispatch();
+  //access quizzes and current user 
   const { quizzes } = useSelector((state: RootState) => state.quizzesReducer);
   const { currentUser } = useSelector((state: RootState) => state.accountReducer);
   const isFaculty = currentUser && ["FACULTY", "ADMIN", "TA"].includes((currentUser as any).role);
 
-  // fetch quizzes if store is empty (e.g. user navigated directly to this URL)
+  // fetch quizzes if store is empty 
   useEffect(() => {
     if (quizzes.length === 0) {
       client.findQuizzesForCourse(cid as string).then((data) => dispatch(setQuizzes(data)));
     }
   }, []);
 
+  //find the specific quiz by ID
   const quiz = quizzes.find((q: any) => q._id === qid);
 
   if (!quiz) return <div className="p-4">Loading...</div>;
@@ -34,10 +36,11 @@ export default function QuizDetails() {
   // helper to display boolean fields as Yes/No
   const yesNo = (val: boolean) => val ? "Yes" : "No";
 
+  //Buttons
   return (
     <div id="wd-quiz-details" className="p-4">
 
-      {/* Preview and Edit buttons for faculty */}
+      {/* Publish/Unpublish, Preview and Edit buttons for faculty */}
       {isFaculty && (
         <div className="d-flex justify-content-end mb-4 gap-2">
           <Button
@@ -48,9 +51,10 @@ export default function QuizDetails() {
               } else {
                 await client.publishQuiz(quiz._id);
               }
-              dispatch(togglePublish(quiz._id)); // added
+              //update Redux state immediately to show button works
+              dispatch(togglePublish(quiz._id));
             }}>
-            {quiz.published ? "Unpublish" : "Publish"} {/* added */}
+            {quiz.published ? "Unpublish" : "Publish"} 
           </Button>
           <Button variant="secondary"
             onClick={() => router.push(`/courses/${cid}/quizzes/${qid}/preview`)}>

@@ -1,10 +1,12 @@
+//This is page for Faculty to edit quizzes (can edit both details and questions)
+
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import { updateQuiz, addQuiz } from "../../reducer";
+import { updateQuiz, addQuiz } from "../../reducer"; //Redux actions to send data from user interactions
 import { RootState } from "../../../../../store";
-import * as client from "../../client";
+import * as client from "../../client"; //API calls
 import QuestionEditor from "../../QuestionEditor";
 import {
   Button, Row, Col, FormLabel, FormControl,
@@ -25,9 +27,10 @@ export default function QuizEditor() {
     return null;
   }
 
-  // find existing quiz in Redux store
+  //try to find existing quiz in Redux store
   const existing = quizzes.find((q: any) => q._id === qid);
 
+  //local state for quiz being edited
   const [quiz, setQuiz] = useState<any>(
     existing ?? {
       title: "Unnamed Quiz",
@@ -58,16 +61,20 @@ export default function QuizEditor() {
 
   const handleSave = async () => {
     if (existing) {
+      //update existing quiz
       await client.updateQuiz(quiz);
       dispatch(updateQuiz(quiz));
     } else {
+      //create new quiz
       const newQuiz = await client.createQuizForCourse(cid as string, quiz);
       dispatch(addQuiz(newQuiz));
     }
+    //nav to quiz details page
     router.push(`/courses/${cid}/quizzes/${qid}`);
   };
 
   const handleSaveAndPublish = async () => {
+    //same as saved but forces published to be true
     const publishedQuiz = { ...quiz, published: true };
     if (existing) {
       await client.updateQuiz(publishedQuiz);
@@ -76,10 +83,12 @@ export default function QuizEditor() {
       const newQuiz = await client.createQuizForCourse(cid as string, publishedQuiz);
       dispatch(addQuiz(newQuiz));
     }
+    //go pack to quizzes list page
     router.push(`/courses/${cid}/quizzes`);
   };
 
   const handleCancel = () => {
+    //discard changes
     router.push(`/courses/${cid}/quizzes`);
   };
 
@@ -106,13 +115,13 @@ export default function QuizEditor() {
       {/* Details tab */}
       {activeTab === "details" && (
         <div>
-                {/* Assignment Name */}
+        {/*quiz title */}
       <div className="mb-3">
         <FormControl id="wd-name" type="text" value={quiz.title}
           onChange={(e) => setQuiz({ ...quiz, title: e.target.value })} />
       </div>
 
-          {/* Description */}
+          {/* description */}
           <div className="mb-3">
             <FormLabel>Quiz Instructions</FormLabel>
             <FormControl as="textarea" rows={5}
@@ -120,7 +129,7 @@ export default function QuizEditor() {
               onChange={(e) => setQuiz({ ...quiz, description: e.target.value })} />
           </div>
 
-          {/* Quiz Type */}
+          {/* quiz Type */}
           <Row className="mb-3">
             <Col xs={12} md={4}>
               <FormLabel className="text-md-end d-block pt-2">Quiz Type</FormLabel>
@@ -136,7 +145,7 @@ export default function QuizEditor() {
             </Col>
           </Row>
 
-          {/* Points */}
+          {/* points */}
           <Row className="mb-3">
             <Col xs={12} md={4}>
               <FormLabel className="text-md-end d-block pt-2">Points</FormLabel>
@@ -170,12 +179,15 @@ export default function QuizEditor() {
             </Col>
             <Col xs={12} md={8}>
               <div className="border p-3 rounded">
+                {/* shuffle toggle */}
                 <FormCheck type="checkbox" label="Shuffle Answers" className="mb-2"
                   checked={quiz.shuffleAnswers}
                   onChange={(e) => setQuiz({ ...quiz, shuffleAnswers: e.target.checked })} />
+                {/* time limit toggle & conditional input */}
                 <FormCheck type="checkbox" label="Time Limit" className="mb-2"
                   checked={quiz.timeLimit > 0}
                   onChange={(e) => setQuiz({ ...quiz, timeLimit: e.target.checked ? 20 : 0 })} />
+                {/* only show input if enabled */}
                 {quiz.timeLimit > 0 && (
                   <FormControl type="number" className="mb-2" value={quiz.timeLimit}
                     onChange={(e) => setQuiz({ ...quiz, timeLimit: Number(e.target.value) })} />
@@ -201,6 +213,7 @@ export default function QuizEditor() {
                   <FormLabel>Show Correct Answers</FormLabel>
                 </Col>
                 <Col xs={6}>
+                {/* dropdown example */}
                   <FormSelect value={quiz.showCorrectAnswers}
                     onChange={(e) =>        // fires every time the user picks a new option
                       setQuiz({            // calls setQuiz to update the quiz state

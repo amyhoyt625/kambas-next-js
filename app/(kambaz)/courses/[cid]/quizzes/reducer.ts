@@ -1,3 +1,10 @@
+//Redux slice manages the global quizzes state by providing actions to 
+//add, delete, update, replace, and toggle the published status of quizzes in a course
+
+
+//REDUCER manage/update front end based on results from client 
+
+
 import { createSlice } from "@reduxjs/toolkit";
 
 // initial state is an empty array since quizzes are fetched from the database per course

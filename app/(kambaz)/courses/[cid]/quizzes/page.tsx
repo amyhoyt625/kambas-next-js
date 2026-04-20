@@ -1,4 +1,5 @@
-//Quiz List Screen aka main screen 
+//Quiz List Screen aka main screen that displays published quizzes
+//for students and published and unpublished for faculty
 
 "use client";
 import Link from "next/link";
@@ -24,12 +25,15 @@ export default function Quizzes() {
   const { currentUser } = useSelector((state: RootState) => state.accountReducer);
   const isFaculty = currentUser && ["FACULTY", "ADMIN", "TA"].includes((currentUser as any).role);
 
-  // only show quizzes for this course and filters for student vs. faculty 
+  // only show quizzes for this course AND apply role-based filtering
   const courseQuizzes = quizzes.filter((q: any) => {
+    //check quiz belongs to current course
     if (q.course !== cid) return false;
     if (!isFaculty && !q.published) return false;
     return true;
-  }).sort((a: any, b: any) => {  // added
+  }).sort((a: any, b: any) => {  
+    //sort quizzes by available date (earliest first)
+    //quizzes without a date go to the bottom
     if (!a.availableDate) return 1;
     if (!b.availableDate) return -1;
     return new Date(a.availableDate).getTime() - new Date(b.availableDate).getTime();

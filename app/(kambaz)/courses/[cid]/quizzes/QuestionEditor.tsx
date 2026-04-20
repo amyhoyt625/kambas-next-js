@@ -1,7 +1,9 @@
+//question editor for general editor page
+
 "use client";
 import { useState } from "react";
 import { Button, FormControl, FormSelect, FormCheck } from "react-bootstrap";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid"; 
 import { FaTrash } from "react-icons/fa";
 
 export default function QuestionEditor({
@@ -9,14 +11,17 @@ export default function QuestionEditor({
 }: {
   questions: any[], onChange: (questions: any[]) => void
 }) {
+  //tracks which question is currently being edited
   const [editingId, setEditingId] = useState<string | null>(null);
+  //temp working copy (whats being edited)
   const [draftQuestion, setDraftQuestion] = useState<any | null>(null);
 
   const totalPoints = questions.reduce((sum, q) => sum + (q.points || 0), 0);
 
+  //add new question
   const handleAddQuestion = () => {
     const newQuestion = {
-      _id: uuidv4(),
+      _id: uuidv4(), //unique id for tracking
       type: "MULTIPLE_CHOICE",
       title: "New Question",
       points: 1,
@@ -28,11 +33,14 @@ export default function QuestionEditor({
       correctAnswer: true,
       answers: [],
     };
+    //add new question to parent state 
     onChange([...questions, newQuestion]);
+    //enter edit mode
     setEditingId(newQuestion._id);
     setDraftQuestion({ ...newQuestion });
   };
 
+  //delete
   const handleDeleteQuestion = (qid: string) => {
     onChange(questions.filter(q => q._id !== qid));
     if (editingId === qid) {
@@ -41,7 +49,7 @@ export default function QuestionEditor({
     }
   };
 
-  // ---------- DRAFT HELPERS ----------
+  //draft helper funcs
   const updateDraftField = (field: string, value: any) => {
     setDraftQuestion({ ...draftQuestion, [field]: value });
   };
@@ -53,6 +61,7 @@ export default function QuestionEditor({
     updateDraftField("choices", updated);
   };
 
+  //mark a specific choice as correct
   const setCorrectChoice = (choiceId: string) => {
     const updated = draftQuestion.choices.map((c: any) => ({
       ...c,
@@ -93,24 +102,27 @@ export default function QuestionEditor({
     );
   };
 
+  // handle saving and canceling
   const handleSave = () => {
     onChange(
       questions.map(q =>
         q._id === draftQuestion._id ? draftQuestion : q
       )
     );
+    //exit edit mode
     setEditingId(null);
     setDraftQuestion(null);
   };
 
   const handleCancel = () => {
+    //discard changes
     setEditingId(null);
     setDraftQuestion(null);
   };
 
   return (
     <div>
-      {/* Header */}
+      {/* Question Header */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <span className="fw-bold">Total Points: {totalPoints}</span>
         <Button variant="secondary" onClick={handleAddQuestion}>
@@ -124,8 +136,10 @@ export default function QuestionEditor({
         </div>
       )}
 
+      {/* questions list */}
       {questions.map((q) => {
         const isEditing = editingId === q._id;
+        //use draft ver if editing
         const data = isEditing ? draftQuestion : q;
 
         return (
